@@ -1,6 +1,7 @@
 {-
 ---
-fulltitle: A Generic State Transformer.
+fulltitle: A Generic State Transformer
+date: October 31, 2022
 ---
 
 This file goes with [`StateMonad`](StateMonad.html). Make sure that you start

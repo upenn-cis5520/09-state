@@ -1,6 +1,7 @@
 {-
 ---
 fulltitle: The State Monad!
+date: October 31, 2022
 ---
 
 Set-up
@@ -547,5 +548,5 @@ Credit
 The first part of the lecture is a revised version of the lecture notes by
 [Graham Hutton][0], January 2011
 
-[0]: http://www.cs.nott.ac.uk/~gmh/monads
+[0]: http://www.cs.nott.ac.uk/~gmh/monads, now revised as http://www.cs.nott.ac.uk/~pszgmh/pih.html
 -}

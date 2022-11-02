@@ -1,6 +1,7 @@
 {-
 ---
 fulltitle: "In class exercise: Random Generation"
+date: October 31, 2022
 ---
 -}
 
