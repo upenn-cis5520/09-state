@@ -1,7 +1,7 @@
 {-
 ---
 fulltitle: "In class exercise: Random Generation"
-date: October 31, 2022
+date:
 ---
 -}
 
@@ -138,9 +138,11 @@ class Arb1 a where
   arb1 :: StdGen -> (a, StdGen)
 
 instance Arb1 Int where
+  arb1 :: StdGen -> (Int, StdGen)
   arb1 = uniformInt
 
 instance Arb1 Bool where
+  arb1 :: StdGen -> (Bool, StdGen)
   arb1 = uniformBool
 
 {-
@@ -243,6 +245,7 @@ random number generator stored in the `State StdGen a` type.
 -}
 
 instance Arb Int where
+  arb :: Gen Int
   arb = do
     s <- S.get
     let (y :: Int, s') = Random.uniform s
@@ -297,6 +300,7 @@ elements :: [a] -> Gen a
 elements = undefined
 
 instance Arb Bool where
+  arb :: Gen Bool
   arb = elements [False, True]
 
 {-
@@ -307,4 +311,5 @@ frequency :: [(Int, Gen a)] -> Gen a
 frequency = undefined
 
 instance (Arb a) => Arb [a] where
+  arb :: Arb a => Gen [a]
   arb = frequency [(1, return []), (3, (:) <$> arb <*> arb)]

@@ -1,7 +1,7 @@
 {-
 ---
 fulltitle: A Generic State Transformer
-date: October 31, 2022
+date: October 30, 2023
 ---
 
 This file goes with [`StateMonad`](StateMonad.html). Make sure that you start
@@ -41,7 +41,7 @@ runState (S f) = f
 This type is a parameterized state-transformer monad where the state is
 denoted by type `s` and the return value of the transformer is the
 type `a`. We make the above a monad by declaring it to be an instance
-of the `Monad` typeclass
+of the `Applicative` and `Monad` typeclasses.
 -}
 
 instance Monad (State s) where
@@ -56,10 +56,13 @@ We also define instances for `Functor` and `Applicative`:
 -}
 
 instance Functor (State s) where
+  fmap :: (a -> b) -> State s a -> State s b
   fmap = liftM
 
 instance Applicative (State s) where
+  pure :: a -> State s a
   pure = return
+  (<*>) :: State s (a -> b) -> State s a -> State s b
   (<*>) = ap
 
 {-

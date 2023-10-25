@@ -5,7 +5,7 @@ synopsis:            State Monad
 homepage:            https://www.cis.upenn.edu/~cis552/current/index.html
 license:             OtherLicense
 license-file:        LICENSE
-maintainer:          sweirich@cis.upenn.edu
+maintainer:          sweirich@seas.upenn.edu
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
 
@@ -20,21 +20,6 @@ library
                      , containers >= 0.6
                      , random >= 1.2
                      , mtl >= 2.2.2
-  default-language:    Haskell2010  
-  ghc-options:         -Wincomplete-patterns -Wno-missing-signatures
-  default-extensions:  ScopedTypeVariables
-                     , TypeApplications
-                     , InstanceSigs
-                     , KindSignatures
-                     , LambdaCase
-                     , DeriveFunctor
-                     , DeriveFoldable
-                     , DeriveTraversable
-                     , GeneralizedNewtypeDeriving
-                     , TupleSections
-                     , MultiParamTypeClasses
-                     , FlexibleInstances
-                     , FlexibleContexts
-                     , UndecidableInstances
-                     , NoMonomorphismRestriction
-                     , NoStarIsType
+  default-language:    GHC2021
+  ghc-options:         -Wincomplete-patterns -Wno-missing-signatures -Wno-noncanonical-monad-instances
+  default-extensions:  

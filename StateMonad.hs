@@ -1,7 +1,7 @@
 {-
 ---
 fulltitle: The State Monad!
-date: October 31, 2022
+date: October 30, 2023
 ---
 
 Set-up
@@ -31,7 +31,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 {-
-This module depends on an auxiliary module [State](State.html) that you will define later.
+This module depends on an auxiliary module [State](State.html) that we will define later.
 We'll qualify imports from this module with `S.` so that you can see where they
 come from.
 -}
@@ -47,7 +47,7 @@ some kind of mutable data. We're going to start with some examples of state
 manipulation, written in an awkward style, and then show how monads
 can cleanly abstract the sequencing necessary for such programs.
 
-By way of an example, let's go back to binary trees whose leaves contains
+By way of an example, let's go back to binary trees whose *leaves* contains
 values of some type `a`:
 -}
 
@@ -67,8 +67,9 @@ like so:
 -}
 
 countF :: Tree a -> Int
-countF (Leaf _) = 1
-countF (Branch t1 t2) = countF t1 + countF t2
+countF t = case t of
+  (Leaf _) -> 1
+  (Branch t1 t2) -> countF t1 + countF t2
 
 {-
 (Or, they might just use the `length` operation from the `Foldable` type class!)
@@ -81,7 +82,7 @@ In Haskell, we could write such code in the `IO` monad using `IORef`s. The
 operation `newIORef` creates a new mutable variable, which can be read
 (`readIORef`) and written (`writeIORef`) and updated (`modifyIORef`). If you
 are familiar with OCaml, `IORef`s are like the `ref` type in that language.
-These mutable references are available in the [Data.IORef](https://hackage.haskell.org/package/base-4.14.1.0/docs/Data-IORef.html)
+These mutable references are available in the [Data.IORef](https://hackage.haskell.org/package/base-4.19.0.0/docs/Data-IORef.html)
 module.
 -}
 
@@ -89,9 +90,16 @@ countIO :: Tree a -> IO Int
 countIO t = do
   -- create a mutable variable, initialize to 0
   count <- IO.newIORef 0
-  -- visit every node in the tree, mutating the variable
-  let aux (Leaf _) = IO.modifyIORef count (+ 1)
-      aux (Branch t1 t2) = aux t1 >> aux t2
+  -- function to visit every node in the tree
+  let aux :: Tree a -> IO ()
+      aux t = case t of
+        (Leaf _) ->
+          -- increment count variable (i.e. count++)
+          IO.modifyIORef count (+ 1)
+        (Branch t1 t2) -> do
+          aux t1
+          aux t2
+  -- call function on tree
   aux t
   -- return the total count
   IO.readIORef count
@@ -150,8 +158,9 @@ labelIO t = do
   count <- IO.newIORef 0
   -- visit every node in the tree, modifying the variable
   let aux (Leaf x) = do
+        -- access count before modification
         c <- IO.readIORef count
-        IO.writeIORef count (c + 1)
+        IO.modifyIORef count (+ 1)
         return (Leaf (x, c))
       aux (Branch t1 t2) = do
         t1' <- aux t1
@@ -161,7 +170,6 @@ labelIO t = do
   aux t
 
 -- >>> labelIO tree
--- Branch (Branch (Leaf ('a',0)) (Leaf ('b',1))) (Leaf ('c',2))
 
 {-
 We can also implement this operation with purely functional code by taking
@@ -348,10 +356,14 @@ instance Monad ST2 where
 -}
 
 instance Functor ST2 where
+  fmap :: (a -> b) -> ST2 a -> ST2 b
   fmap = liftM
 
 instance Applicative ST2 where
+  pure :: a -> ST2 a
   pure = return
+
+  (<*>) :: ST2 (a -> b) -> ST2 a -> ST2 b
   (<*>) = ap
 
 {-
@@ -399,7 +411,6 @@ For example, `label tree` gives our expected result:
 -}
 
 -- >>> label tree
--- Branch (Branch (Leaf ('a', 0)) (Leaf ('b',1))) (Leaf ('c', 2))
 
 {-
 A Generic State Transformer
@@ -430,21 +441,22 @@ Using a Generic state transformer
 Let's use our generic state monad to rewrite the tree labeling function
 from above. Note that the actual type definition of the generic transformer
 type (`S.State`) is *hidden* from us, so we must use only the publicly
-exported functions, including `S.get` and `S.put` and the `Monad` type class
+exported functions, including `S.get` and `S.modify` and the `Monad` type class
 operations.
 
 Now, the labeling function with our generic `State` monad is straightforward.
 -}
 
 mlabelS :: Tree t -> S.State Int (Tree (t, Int))
-mlabelS (Leaf x) = do
-  c <- S.get
-  S.put (c + 1)
-  return (Leaf (x, c))
-mlabelS (Branch t1 t2) = do
-  t1' <- mlabelS t1
-  t2' <- mlabelS t2
-  return (Branch t1' t2')
+mlabelS t = case t of
+  (Leaf x) -> do
+    c <- S.get
+    S.modify (+ 1)
+    return (Leaf (x, c))
+  (Branch t1 t2) -> do
+    t1' <- mlabelS t1
+    t2' <- mlabelS t2
+    return (Branch t1' t2')
 
 {-
 Easy enough!
@@ -452,7 +464,6 @@ Easy enough!
 -}
 
 -- >>> S.runState (mlabelS tree) 0
--- (Branch (Branch (Leaf ('a',0)) (Leaf ('b',1))) (Leaf ('c',2)),3)
 
 {-
 We can run the action from any initial state of our choice
@@ -460,7 +471,6 @@ We can run the action from any initial state of our choice
 -}
 
 -- >>> S.runState (mlabelS tree) 1000
--- (Branch (Branch (Leaf ('a',1000)) (Leaf ('b',1001))) (Leaf ('c',1002)),1003)
 
 {-
 Now, what's the point of a generic state transformer if we can't have richer
@@ -536,10 +546,8 @@ s :: MySt Char
 (lt, s) = S.runState (mlabelM tree2) initM
 
 -- >>> lt
--- Branch (Branch (Branch (Leaf ('a',0)) (Leaf ('b',1))) (Leaf ('c',2))) (Branch (Branch (Leaf ('a',3)) (Leaf ('b',4))) (Leaf ('c',5)))
 
 -- >>> s
--- M {index = 6, freq = fromList [('a',2),('b',2),('c',2)]}
 
 {-
 Credit
