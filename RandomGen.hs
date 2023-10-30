@@ -1,21 +1,23 @@
 {-
 ---
 fulltitle: "In class exercise: Random Generation"
-date:
+date: November 1, 2023
 ---
 -}
 
 module RandomGen where
 
+-- Some library operations that you can use for this exercise.
+import qualified Control.Monad as Monad
 -- Make sure you have filled in all of the 'undefined' values in the State module.
 -- If you have not, modify the State import below to Control.Monad.State
 -- but don't import both State and Control.Monad.State
--- It also might be tempting to import Test.QuickCheck, but do not import anything
--- from quickcheck for this exercise.
-import Control.Monad
 import qualified State as S
 import System.Random (StdGen)
 import qualified System.Random as Random (mkStdGen, randomIO, uniform, uniformR)
+
+-- It also might be tempting to import Test.QuickCheck, but do not import anything
+-- from quickcheck for this exercise.
 
 {-
 Random Generation
