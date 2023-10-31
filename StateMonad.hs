@@ -142,6 +142,7 @@ above.
 -}
 
 -- >>> countI tree
+-- 3
 
 {-
 At this point, you might be wondering what the point of this all is.
@@ -247,7 +248,7 @@ value, with the type of such values being a parameter of the `ST`
 type:
 
 -}
-
+-- 是一个 function type，叫做 state transformer ST
 type ST a = Store -> (a, Store)
 
 {-
@@ -261,11 +262,13 @@ of the types below.
 
 returnST :: a -> ST a
 -- returnST :: a -> Store -> (a, Store)
-returnST = undefined
+returnST a = \s -> (a,s)
 
 bindST :: ST a -> (a -> ST b) -> ST b
 -- bindST :: (Store -> (a,Store)) -> (a -> (Store -> (b, Store))) -> (Store -> (b, Store))
-bindST st f = undefined
+bindST st f = \s -> let (a, s') = st s 
+                        st' = f a
+                    in st' s'
 
 {-
 That is, `returnST` converts a value into a state transformer by simply
@@ -290,10 +293,16 @@ label2 t = fst (aux t 0)
   where
     aux :: Tree a -> ST (Tree (a, Int))
     aux (Leaf x) = \s -> (Leaf (x, s), s + 1)
+    aux (Branch t1 t2) = 
+      bindST (aux t1) (\t1' -> 
+        bindST (aux t2) (\t2' -> 
+          returnST (Branch t1' t2')))
+{-
     aux (Branch t1 t2) = \s ->
       let (t1', s') = aux t1 s
           (t2', s'') = aux t2 s'
        in (Branch t1' t2', s'')
+-}
 
 {-
 Because the `ST` parameterized type has definitions for return and bind, we should
@@ -379,6 +388,9 @@ getST2 = S $ \s -> (s, s)
 putST2 :: Store -> ST2 ()
 putST2 s = S $ \_ -> ((), s)
 
+modifyST2 :: (Store -> Store) -> ST2 ()
+modifyST2 f = S $ \s -> ((), f s)
+
 {-
 These functions are additional useful operations for the `ST2` type. (The fact
 that `ST2` is a monad is not the *only* important property of this type.)
@@ -388,8 +400,12 @@ straightforward to define our tree labeling function.
 -}
 
 mlabel :: Tree a -> ST2 (Tree (a, Int))
-mlabel (Leaf x) = undefined -- use `getST2` and `putST2` here
-mlabel (Branch t1 t2) = undefined
+mlabel (Leaf x) = 
+  getST2 >>= \k -> putST2 (k + 1) >> return (Leaf (x,k)) -- use `getST2` and `putST2` here
+mlabel (Branch t1 t2) = 
+  mlabel t1 >>= (\t1' ->
+    mlabel t2 >>= (\t2' ->
+      return (Branch t1' t2')))
 
 {-
 Try to implement `mlabel` both with and without `do`-notation.
