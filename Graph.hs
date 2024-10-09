@@ -1,7 +1,6 @@
 {-
 ---
 fulltitle: "Optional exercise: DFS using the state monad"
-date: November 1, 2023
 ---
 -}
 
@@ -27,13 +26,13 @@ in the `undefined` answers in this module before you work on this code.
 We'll also import a few other modules for convenience.
 -}
 
-import qualified Control.Monad as Monad
+import Control.Monad qualified as Monad
 import Data.Map (Map)
-import qualified Data.Map as Map
-import qualified Data.Maybe as Maybe
-import qualified Data.Monoid as Monoid
+import Data.Map qualified as Map
+import Data.Maybe qualified as Maybe
+import Data.Monoid qualified as Monoid
 import Data.Set (Set)
-import qualified Data.Set as Set
+import Data.Set qualified as Set
 import State (State, evalState, get, modify)
 
 {-
@@ -266,12 +265,12 @@ work in any monad. These operators should replace uses of
 
 -}
 
-(<||>) :: Monad m => m Bool -> m Bool -> m Bool
+(<||>) :: (Monad m) => m Bool -> m Bool -> m Bool
 m1 <||> m2 = do
   b <- m1
   if b then return True else m2
 
-(<&&>) :: Monad m => m Bool -> m Bool -> m Bool
+(<&&>) :: (Monad m) => m Bool -> m Bool -> m Bool
 m1 <&&> m2 = do
   b <- m1
   if b then m2 else return False
@@ -317,7 +316,7 @@ Hint: I found it nice to define a monadic version of the (:)
 data constructor to use in my solution.
 -}
 
-(<:>) :: Monad f => f a -> f [a] -> f [a]
+(<:>) :: (Monad f) => f a -> f [a] -> f [a]
 (<:>) = Monad.liftM2 (:)
 
 spanningTree :: Graph -> Node -> Tree
@@ -361,6 +360,8 @@ Now, finish the implementation of the connected component algorithm.
 connected :: Graph -> [Tree]
 connected g = evalState loop (initWorkList g)
   where
+    -- \| loop through all nodes in the graph until they have all
+    -- been visited.
     loop :: State Store [Tree]
     loop = do
       p <- get
@@ -386,6 +387,8 @@ components.
 connectedGraph :: Graph -> [Graph]
 connectedGraph g = evalState loop (initWorkList g)
   where
+    -- \| loop through all nodes in the graph until they have all
+    -- been visited.
     loop :: State Store [Graph]
     loop = do
       p <- get
@@ -406,9 +409,11 @@ Graph queries
 We can fold over trees, but can we fold over graphs?
 -}
 
-foldGraph :: forall m. Monoid m => (Node -> m) -> Graph -> [m]
+foldGraph :: forall m. (Monoid m) => (Node -> m) -> Graph -> [m]
 foldGraph f g = evalState loop (initWorkList g)
   where
+    -- \| loop through all nodes in the graph until they have all
+    -- been visited.
     loop :: State Store [m]
     loop = do
       p <- get

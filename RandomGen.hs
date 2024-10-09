@@ -1,20 +1,20 @@
 {-
 ---
 fulltitle: "In class exercise: Random Generation"
-date: November 1, 2023
+date: October 30, 2024
 ---
 -}
 
 module RandomGen where
 
 -- Some library operations that you can use for this exercise.
-import qualified Control.Monad as Monad
+import Control.Monad qualified as Monad
 -- Make sure you have filled in all of the 'undefined' values in the State module.
 -- If you have not, modify the State import below to Control.Monad.State
 -- but don't import both State and Control.Monad.State
-import qualified State as S
+import State qualified as S
 import System.Random (StdGen)
-import qualified System.Random as Random (mkStdGen, randomIO, uniform, uniformR)
+import System.Random qualified as Random (mkStdGen, randomIO, uniform, uniformR)
 
 -- It also might be tempting to import Test.QuickCheck, but do not import anything
 -- from quickcheck for this exercise.
@@ -151,7 +151,7 @@ instance Arb1 Bool where
 With this class, we can also generalize our "testing" function.
 -}
 
-testArb1 :: Arb1 a => Int -> a
+testArb1 :: (Arb1 a) => Int -> a
 testArb1 = fst . arb1 . mkStdGen
 
 {-
@@ -196,7 +196,7 @@ is generated so that you get reasonable lists.
 
 -}
 
-instance Arb1 a => Arb1 [a] where
+instance (Arb1 a) => Arb1 [a] where
   arb1 s = undefined
 
 -- >>> testArb1 1 :: [Int]
@@ -265,7 +265,7 @@ bounded b = undefined
 Now define a `sample` function, which generates and prints 10 random values.
 -}
 
-sample :: Show a => Gen a -> IO ()
+sample :: (Show a) => Gen a -> IO ()
 sample gen = do
   seed <- (Random.randomIO :: IO Int) -- get a seed from the global random number generator
   -- hidden in the IO monad
@@ -313,5 +313,5 @@ frequency :: [(Int, Gen a)] -> Gen a
 frequency = undefined
 
 instance (Arb a) => Arb [a] where
-  arb :: Arb a => Gen [a]
+  arb :: (Arb a) => Gen [a]
   arb = frequency [(1, return []), (3, (:) <$> arb <*> arb)]

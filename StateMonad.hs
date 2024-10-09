@@ -1,7 +1,7 @@
 {-
 ---
 fulltitle: The State Monad!
-date: October 30, 2023
+date: October 28, 2024
 ---
 
 Set-up
@@ -26,17 +26,17 @@ be building off this module in many ways the rest of the semester.
 module StateMonad where
 
 import Control.Monad (ap, liftM)
-import qualified Data.IORef as IO
+import Data.IORef qualified as IO
 import Data.Map (Map)
-import qualified Data.Map as Map
-import qualified Data.Maybe as Maybe
+import Data.Map qualified as Map
+import Data.Maybe qualified as Maybe
 {-
 This module depends on an auxiliary module [State](State.html) that we will define later.
 We'll qualify imports from this module with `S.` so that you can see where they
 come from.
 -}
 
-import qualified State as S
+import State qualified as S
 
 {-
 State Transformations
@@ -428,7 +428,7 @@ type Store = (Int, Int)
 and so on.
 
 Therefore, we would like to write reusable code that will work with
-*any* type of store.
+\*any* type of store.
 
 The file [State](State.html) contains a generic library for that purpose.
 You should switch to that file now and read it before moving on.
@@ -510,14 +510,14 @@ Similarly, we want an action that updates the frequency of a given
 element `k`.
 -}
 
-updFreqM :: Ord a => a -> S.State (MySt a) ()
+updFreqM :: (Ord a) => a -> S.State (MySt a) ()
 updFreqM = undefined
 
 {-
 And with these two, we are done
 -}
 
-mlabelM :: Ord a => Tree a -> S.State (MySt a) (Tree (a, Int))
+mlabelM :: (Ord a) => Tree a -> S.State (MySt a) (Tree (a, Int))
 mlabelM (Leaf x) = do
   c <- updateIndexM
   updFreqM x
